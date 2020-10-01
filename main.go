@@ -324,11 +324,11 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			if contains(reactlist, m.Mentions[0].ID) {
 				//Add user to the react list
 				reactlist = append(reactlist, m.Author.ID)
-				s.ChannelMessageSend(m.ChannelID, m.Mentions[0].Mention() +" added to react list")
+				s.ChannelMessageSend(m.ChannelID, m.Mentions[0].Mention() +" added to reaction target list")
 			} else {
 				//Remove user from the react list
 				reactlist = removeStringFromSlice(reactlist,  m.Mentions[0].ID)
-				s.ChannelMessageSend(m.ChannelID, m.Mentions[0].Mention() +" removed from react list")
+				s.ChannelMessageSend(m.ChannelID, m.Mentions[0].Mention() +" removed from reaction target list")
 			}
 		} else {
 			s.ChannelMessageSend(m.ChannelID, "You did not mention a user with the command. ex: b!addreacttarget")
