@@ -182,6 +182,12 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
+	if reactMode {
+		if contains(reactlist, m.Author.ID) {
+			_ = s.MessageReactionAdd(m.ChannelID, m.ID, reactemoji.APIName())
+		}
+	}
+
 	if strings.ToLower(m.Content) == "b!yesno" {
 		if hasPermissions(m.Member.Roles) {
 			if (yesno) {
@@ -315,16 +321,17 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	if strings.Contains(strings.ToLower(m.Content), "b!addreacttarget") {
 		if len(m.Mentions) != 0 {
-			key := containsUser(entries, m.Mentions[0].ID)
-			if key < 0 {
-				s.ChannelMessageSend(m.ChannelID, "User not found")
-			} else {
+			if contains(reactlist, m.Mentions[0].ID) {
 				//Add user to the react list
 				reactlist = append(reactlist, m.Author.ID)
-				s.ChannelMessageSend(m.ChannelID, "User added to react list")
+				s.ChannelMessageSend(m.ChannelID, m.Mentions[0].Mention() +" added to react list")
+			} else {
+				//Remove user from the react list
+				reactlist = removeStringFromSlice(reactlist,  m.Mentions[0].ID)
+				s.ChannelMessageSend(m.ChannelID, m.Mentions[0].Mention() +" added to react list")
 			}
 		} else {
-			s.ChannelMessageSend(m.ChannelID, "User not found")
+			s.ChannelMessageSend(m.ChannelID, "You did not mention a user with the command. ex: b!addreacttarget")
 		}
 	}
 
@@ -432,12 +439,24 @@ func userJoin(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
 }
 
 func contains (l []string, u string) bool {
-	for _, i := range l {
-		if i == u {
-			return true
+	if len(l) > 0 {
+		for _, i := range l {
+			if i == u {
+				return true
+			}
 		}
 	}
 	return false
+}
+
+func removeStringFromSlice (s []string, t string) []string {
+	for key, user := range s {
+		if user == t {
+			s[key] = s[len(s)-1]
+			return s[:len(s)-1]
+		}
+	}
+	return s
 }
 
 func containsUser(e []Entry, id string) int {
