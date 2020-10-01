@@ -1,0 +1,5 @@
+use powershell
+cd to folder
+$Env:GOOS = "linux"; $Env:GOARCH = "amd64"; go build
+$Env:GOOS = "windows"; $Env:GOARCH = "amd64"; go build
+
