@@ -62,7 +62,7 @@ func init() {
 	roles["593308455247413270"] = 1.15 //Loyalist
     roles["594580477378166784"] = 1.25 //Newbies + Pals
 	roles["default"] = 1.25 //No Role 
-	yesno = true // Default state of the Yes/No reaction feature
+	yesno = false // Default state of the Yes/No reaction feature
 	david = false // Default state of the David Hyperbleble reaction feature
 	reactMode = false //Default state of the specific user message reaction feature
 
@@ -128,12 +128,12 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	// If the message is "ping" reply with "Pong!"
-	if m.Content == "ping" {
+	if strings.ToLower(m.Content) == "ping" {
 		s.ChannelMessageSend(m.ChannelID, "Pong!")
 	}
 
 	// If the message is "pong" reply with "Ping!"
-	if m.Content == "pong" {
+	if strings.ToLower(m.Content) == "pong" {
 		s.ChannelMessageSend(m.ChannelID, "Ping!")
 	}
 
@@ -182,7 +182,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	if m.Content == "b!yesno" {
+	if strings.ToLower(m.Content) == "b!yesno" {
 		if hasPermissions(m.Member.Roles) {
 			if (yesno) {
 				yesno = false
@@ -194,8 +194,8 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	if m.Content == "brookeismean" {
-		if  m.Author.ID == "171417327961636864" {
+	if strings.ToLower(m.Content) == "brookeismean" {
+		if  m.Author.ID == "171417327961636864" || m.Author.ID == "470063262554128415" {
 			if m.GuildID == guildID {
 				st, err := s.Channel(generalChannel)
 				if err == nil {
@@ -205,7 +205,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	if m.Content == "b!davidmode" {
+	if strings.ToLower(m.Content) == "b!davidmode" {
 		if (m.Author.ID == "171417327961636864" || m.Author.ID == "330568658374098947") {
 			if (david) {
 				david = false
@@ -257,16 +257,16 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	if m.Content == "b!debug" {
+	if strings.ToLower(m.Content) == "b!debug" {
 		s.ChannelMessageSend(m.ChannelID, toJSON(entries))
 	}
 
-	if m.Content == "b!clear" {
+	if strings.ToLower(m.Content) == "b!clear" {
 		entries = nil
 		s.ChannelMessageSend(m.ChannelID, "Entries Cleared")
 	}
 
-	if m.Content == "b!draw" {
+	if strings.ToLower(m.Content) == "b!draw" {
 		if hasPermissions(m.Member.Roles) {
 			if entries != nil {
 				//Create weighted total
@@ -291,13 +291,13 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	if m.Content == "b!score" {
+	if strings.ToLower(m.Content) == "b!score" {
 		if hasPermissions(m.Member.Roles) {
 			score()
 		}
 	}
 
-	if m.Content == "b!leaderboard" {
+	if strings.ToLower(m.Content) == "b!leaderboard" {
 		if hasPermissions(m.Member.Roles) {
 			score()
 			top := sortScore(entries)
@@ -313,7 +313,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	if strings.Contains(m.Content, "b!addreacttarget") {
+	if strings.Contains(strings.ToLower(m.Content), "b!addreacttarget") {
 		if len(m.Mentions) != 0 {
 			key := containsUser(entries, m.Mentions[0].ID)
 			if key < 0 {
@@ -328,7 +328,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	if m.Content == "b!reactmode" {
+	if strings.ToLower(m.Content) == "b!reactmode" {
 		//if hasPermissions(m.Member.Roles) {
 			reactMode = !reactMode
 
@@ -343,7 +343,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		//}
 	}
 
-	if strings.Contains(m.Content, "b!setreactemoji") {
+	if strings.Contains(strings.ToLower(m.Content), "b!setreactemoji") {
 		//Check to see if Author is me (KingBunz)
 		if m.Author.ID == "171417327961636864" {
 			params := strings.Fields(m.Content)
@@ -361,7 +361,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 
-	if strings.Contains(m.Content, "b!info") {
+	if strings.Contains(strings.ToLower(m.Content), "b!info") {
 		if len(m.Mentions) != 0 {
 			key := containsUser(entries, m.Mentions[0].ID)
 			if key < 0 {
@@ -375,7 +375,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	if m.Content == "b!enable" {
+	if strings.ToLower(m.Content) == "b!enable" {
 		if m.Author.ID == "171417327961636864" {
 			e, err := s.State.Emoji("240281725056319498","650880252310192145")
 			if err != nil {
@@ -386,7 +386,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	if strings.Contains(m.Content, "b!reactdraw") {
+	if strings.Contains(strings.ToLower(m.Content), "b!reactdraw") {
 		params := strings.Fields(m.Content)
 		cid := params[1]
 		mid := params[2]
