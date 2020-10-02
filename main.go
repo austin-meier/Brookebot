@@ -323,7 +323,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		if len(m.Mentions) != 0 {
 			if contains(reactlist, m.Mentions[0].ID) {
 				//Add user to the react list
-				reactlist = append(reactlist, m.Author.ID)
+				reactlist = append(reactlist, m.Mentions[0].ID)
 				s.ChannelMessageSend(m.ChannelID, m.Mentions[0].Mention() +" added to reaction target list")
 			} else {
 				//Remove user from the react list
@@ -439,7 +439,7 @@ func userJoin(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
 }
 
 func contains (l []string, u string) bool {
-	if len(l) > 0 {
+	if len(l) != 0 {
 		for _, i := range l {
 			if i == u {
 				return true
