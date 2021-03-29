@@ -22,17 +22,15 @@ var (
 	generalChannel string
 	suggestionsChannel string
 	rulesChannel string
+	testChannel string
+	pollsChannel string
 	guildID string
-
-	//Moderator+ Role
 	minimumRole string
-
 	roles map[string]float64
 	entries []Entry
 	reactlist []string
 	reactMode bool
 	reactemoji *discordgo.Emoji
-	yesno bool
 	david bool
 )
 
@@ -55,14 +53,15 @@ func init() {
 	suggestionsChannel = "753250162067112006" // Suggestions Channel ID
 	rulesChannel = "592548422138068993" // Rules Channel ID
 	guildID = "476175990931062785" // TheBrookeB Guild ID
+	testChannel = "722507153285578872" // Bot Testing Channel ID
+	pollsChannel = "826177720639029278" // Polls Channel ID
 	filename = "users.json"; //File name for the user data to be stored
-	minimumRole = "479802788101226509" //Moderator
+	minimumRole = "479802788101226509" //Moderator +
 	roles = make(map[string]float64)
 	roles["593310655696732163"] = 1 //Golden & up
 	roles["593308455247413270"] = 1.15 //Loyalist
     roles["594580477378166784"] = 1.25 //Newbies + Pals
 	roles["default"] = 1.25 //No Role 
-	yesno = false // Default state of the Yes/No reaction feature
 	david = false // Default state of the David Hyperbleble reaction feature
 	reactMode = false //Default state of the specific user message reaction feature
 
@@ -112,6 +111,8 @@ func main() {
 	dg.Close()
 }
 
+var quotesRegex = regexp.MustCompile(`"(.*?)"`)
+
 // This function will be called (due to AddHandler above) every time a new
 // message is created on any channel that the autenticated bot has access to.
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -145,30 +146,70 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	if yesno {
+	//Polling Chanel
+	if m.ChannelID == pollsChannel {
+		if strings.Contains(m.Content, "b!poll") {
+			content := strings.ReplaceAll(m.Content, "“", "\"")
+			content = strings.ReplaceAll(content, "”", "\"")
 
-		if strings.Contains(strings.ToLower(m.Content), "boob") {
-			e, err := s.State.Emoji("476175990931062785","638210968001708032")
-			if err == nil {
-				_ = s.MessageReactionAdd(m.ChannelID, m.ID, e.APIName())
-			}
-			return
-		}
+			options := getQuotedStrings(content)
+			optionCount := len(options)
 
-		var yesP = regexp.MustCompile(`(?i:\byes\b)`)
-		if yesP.MatchString(m.Content) {
-			e, err := s.State.Emoji("476175990931062785","654696631660183571")
-			if err == nil {
-				_ = s.MessageReactionAdd(m.ChannelID, m.ID, e.APIName())
-			}
-
-		}
-
-		var noP = regexp.MustCompile(`(?i:\bno\b)`)
-		if noP.MatchString(m.Content) {
-			e, err := s.State.Emoji("476175990931062785","638210968001708032")
-			if err == nil {
-				_ = s.MessageReactionAdd(m.ChannelID, m.ID, e.APIName())
+			if(optionCount > 9) {
+				s.ChannelMessageSend(m.ChannelID, "There can only be a maximum of 9 options for the poll. Please try again.")
+			} else {
+				var msg strings.Builder
+				for i, option := range options {
+					if i == 0 {
+						msg.WriteString("**" + "Poll: **" + option + " \n")
+					} else {
+						switch i {
+							case 1:
+								msg.WriteString("\x31\xE2\x83\xA3")
+							case 2:
+								msg.WriteString("\x32\xE2\x83\xA3")
+							case 3:
+								msg.WriteString("\x33\xE2\x83\xA3")
+							case 4:
+								msg.WriteString("\x34\xE2\x83\xA3")
+							case 5:
+								msg.WriteString("\x35\xE2\x83\xA3")
+							case 6:
+								msg.WriteString("\x36\xE2\x83\xA3")
+							case 7:
+								msg.WriteString("\x37\xE2\x83\xA3")
+							case 8:
+								msg.WriteString("\x38\xE2\x83\xA3")
+							case 9:
+								msg.WriteString("\x39\xE2\x83\xA3")
+						}
+						msg.WriteString(" " + option + "\n\n")
+					}
+				}
+				reactMsg, _ := s.ChannelMessageSend(m.ChannelID, msg.String())
+				_ = s.ChannelMessageDelete(m.ChannelID, m.ID)
+				for i := 1; i < optionCount; i++ {
+					switch i {
+						case 1:
+							_ = s.MessageReactionAdd(m.ChannelID, reactMsg.ID, "\x31\xE2\x83\xA3")
+						case 2:
+							_ = s.MessageReactionAdd(m.ChannelID, reactMsg.ID, "\x32\xE2\x83\xA3")
+						case 3:
+							_ = s.MessageReactionAdd(m.ChannelID, reactMsg.ID, "\x33\xE2\x83\xA3")
+						case 4:
+							_ = s.MessageReactionAdd(m.ChannelID, reactMsg.ID, "\x34\xE2\x83\xA3")
+						case 5:
+							_ = s.MessageReactionAdd(m.ChannelID, reactMsg.ID, "\x35\xE2\x83\xA3")
+						case 6:
+							_ = s.MessageReactionAdd(m.ChannelID, reactMsg.ID, "\x36\xE2\x83\xA3")
+						case 7:
+							_ = s.MessageReactionAdd(m.ChannelID, reactMsg.ID, "\x37\xE2\x83\xA3")
+						case 8:
+							_ = s.MessageReactionAdd(m.ChannelID, reactMsg.ID, "\x38\xE2\x83\xA3")
+						case 9:
+							_ = s.MessageReactionAdd(m.ChannelID, reactMsg.ID, "\x39\xE2\x83\xA3")
+					}
+				}
 			}
 		}
 	}
@@ -188,28 +229,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	if strings.ToLower(m.Content) == "b!yesno" {
-		if hasPermissions(m.Member.Roles) {
-			if (yesno) {
-				yesno = false
-				s.ChannelMessageSend(m.ChannelID, "Yes/No Disabled")
-			} else {
-				yesno = true
-				s.ChannelMessageSend(m.ChannelID, "Yes/No Enabled")
-			}
-		}
-	}
 
-	if strings.ToLower(m.Content) == "brookeismean" {
-		if  m.Author.ID == "171417327961636864" || m.Author.ID == "470063262554128415" {
-			if m.GuildID == guildID {
-				st, err := s.Channel(generalChannel)
-				if err == nil {
-						s.ChannelMessageSend(generalChannel, "Please make sure to read the " + st.Mention())
-				}
-			}
-		}
-	}
 
 	if strings.ToLower(m.Content) == "b!davidmode" {
 		if (m.Author.ID == "171417327961636864" || m.Author.ID == "330568658374098947") {
@@ -367,7 +387,6 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-
 	if strings.Contains(strings.ToLower(m.Content), "b!info") {
 		if len(m.Mentions) != 0 {
 			key := containsUser(entries, m.Mentions[0].ID)
@@ -379,17 +398,6 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 		} else {
 			s.ChannelMessageSend(m.ChannelID, "User not found")
-		}
-	}
-
-	if strings.ToLower(m.Content) == "b!enable" {
-		if m.Author.ID == "171417327961636864" {
-			e, err := s.State.Emoji("240281725056319498","650880252310192145")
-			if err != nil {
-				fmt.Println("ERR: Emoji not found")
-			} else {
-				s.ChannelMessageSend(m.ChannelID, e.MessageFormat())
-			}
 		}
 	}
 
@@ -405,7 +413,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			var names []string
 			//Get Users
 			for _, react := range r {
-				users, err := s.MessageReactions(cid, mid, react.Emoji.APIName(), 100)
+				users, err := s.MessageReactions(cid, mid, react.Emoji.APIName(), 100, "", "")
 				if err == nil {
 					for _, user := range users {
 						if !contains(names, user.Username) {
@@ -436,6 +444,16 @@ func userJoin(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
 			s.ChannelMessageSend(generalChannel, "Welcome to the server " + m.Mention() +"! Please make sure to read the " + st.Mention())
 		}
 	}
+}
+
+func getQuotedStrings(s string) []string {
+  ms := quotesRegex.FindAllString(s, -1)
+  ss := make([]string, len(ms))
+  for i, m := range ms {
+    ss[i] = m[1 : len(m)-1] // Note the substring of the match.
+  }
+  return ss
+
 }
 
 func contains (l []string, u string) bool {
