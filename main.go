@@ -112,6 +112,7 @@ func main() {
 }
 
 var quotesRegex = regexp.MustCompile(`"(.*?)"`)
+var parenthesisRegex = regexp.MustCompile(`\((.*?)\)`)
 
 // This function will be called (due to AddHandler above) every time a new
 // message is created on any channel that the autenticated bot has access to.
@@ -148,7 +149,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	//Polling Chanel
 	if m.ChannelID == pollsChannel {
-		if strings.Contains(m.Content, "b!poll") {
+		if strings.Contains(m.Content, "b!poll") || strings.Contains(m.Content, "B!poll") {
 			content := strings.ReplaceAll(m.Content, "“", "\"")
 			content = strings.ReplaceAll(content, "”", "\"")
 
@@ -210,6 +211,12 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 							_ = s.MessageReactionAdd(m.ChannelID, reactMsg.ID, "\x39\xE2\x83\xA3")
 					}
 				}
+			}
+		} else {
+			if hasPermissions(m.Member.Roles) {
+				//Let them send a message
+			} else {
+				_ = s.ChannelMessageDelete(m.ChannelID, m.ID)
 			}
 		}
 	}
