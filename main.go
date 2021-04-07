@@ -184,10 +184,10 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 							case 9:
 								msg.WriteString("\x39\xE2\x83\xA3")
 						}
-						msg.WriteString("\n\n" + "Poll created by " + m.Member.Mention())
+						msg.WriteString(" " + option + "\n\n")
 					}
 				}
-				msg.WriteString(" " + option + "\n\n")
+				msg.WriteString("\n\n" + "Poll created by " + m.Member.Mention())
 				reactMsg, _ := s.ChannelMessageSend(m.ChannelID, msg.String())
 				_ = s.ChannelMessageDelete(m.ChannelID, m.ID)
 				for i := 1; i < optionCount; i++ {
