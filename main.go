@@ -187,7 +187,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 						msg.WriteString(" " + option + "\n\n")
 					}
 				}
-				msg.WriteString("\n\n" + "Poll created by " + m.Member.Mention())
+				msg.WriteString("Poll created by " + m.Author.Mention())
 				reactMsg, _ := s.ChannelMessageSend(m.ChannelID, msg.String())
 				_ = s.ChannelMessageDelete(m.ChannelID, m.ID)
 				for i := 1; i < optionCount; i++ {
