@@ -196,7 +196,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 							case 9:
 								msg.WriteString("\x39\xE2\x83\xA3")
 						}
-						msg.WriteString(" " + option + "\n\n")
+						msg.WriteString(" " + strings.TrimSpace(option) + "\n\n")
 					}
 				}
 				msg.WriteString("Poll created by " + m.Author.Mention())
@@ -423,6 +423,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			if key < 0 {
 				s.ChannelMessageSend(m.ChannelID, "User not found on the list")
 			} else {
+				score()
 				str := "Nick:** " + entries[key].Nick + " **TotalMessages:** " + fmt.Sprintf("%d",entries[key].TotalMessages) + " **AverageLength:** " + fmt.Sprintf("%.2f", entries[key].AverageLength) + " **RankMultiplier:** " + fmt.Sprintf("%.2f", entries[key].RankMultiplier) + " **Score:** " + fmt.Sprintf("%.2f", entries[key].Score) + "**"
 				s.ChannelMessageSend(m.ChannelID, str)
 			}
