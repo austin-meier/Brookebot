@@ -342,6 +342,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		if hasPermissions(m.Member.Roles) {
 			score()
 		}
+		s.ChannelMessageSend(m.ChannelID, "Succesfully ran manual scoring update algorithm")
 	}
 
 	if strings.ToLower(m.Content) == "b!leaderboard" {
