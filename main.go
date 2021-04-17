@@ -174,7 +174,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				var msg strings.Builder
 				for i, option := range options {
 					if i == 0 {
-						msg.WriteString("**" + "Poll: **" + option + " \n")
+						msg.WriteString("**" + "Poll: **" + strings.TrimSpace(option) + " \n")
 					} else {
 						switch i {
 							case 1:
