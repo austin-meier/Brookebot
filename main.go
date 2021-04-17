@@ -298,6 +298,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	if strings.ToLower(m.Content) == "b!debug" {
 		if m.Author.ID == myID {
+			score()
 			jsonFile, err := os.Open(filename)
 			if err == nil {
 				defer jsonFile.Close()
