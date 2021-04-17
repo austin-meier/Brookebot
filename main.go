@@ -32,6 +32,7 @@ var (
 	reactMode bool
 	reactemoji *discordgo.Emoji
 	david bool
+	myID string
 )
 
 type Entry struct {
@@ -64,6 +65,7 @@ func init() {
 	roles["default"] = 1.25 //No Role 
 	david = false // Default state of the David Hyperbleble reaction feature
 	reactMode = false //Default state of the specific user message reaction feature
+	myID = "171417327961636864" //KingBunz Discord Author ID
 
 
 	//TODO LOAD ENTRIES FROM FILE
@@ -149,7 +151,17 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	//Polling Chanel
 	if m.ChannelID == pollsChannel {
-		if strings.Contains(m.Content, "b!poll") || strings.Contains(m.Content, "B!poll") {
+		if strings.ToLower(m.Content) == "b!format" {
+			s.ChannelMessageSend(m.ChannelID, "POLL FORMAT: **b!poll \"Topic\" \"Option 1\" \"Option 2\"** and so fourth, up to 9 options. \n\nMake sure to include the quotation marks around the topic and options or else they won't appear in the poll.")
+		}
+
+		//Allow moderator+ to send help messages
+		if strings.Contains(m.Content, ":") {
+			if hasPermissions(m.Member.Roles) {
+				goto end
+			} 
+		}
+		if strings.Contains(strings.ToLower(m.Content), "b!poll") {
 			content := strings.ReplaceAll(m.Content, "“", "\"")
 			content = strings.ReplaceAll(content, "”", "\"")
 
@@ -220,6 +232,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				_ = s.ChannelMessageDelete(m.ChannelID, m.ID)
 			}
 		}
+		end:
 	}
 
 	if david {
@@ -231,16 +244,8 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	if reactMode {
-		if contains(reactlist, m.Author.ID) {
-			_ = s.MessageReactionAdd(m.ChannelID, m.ID, reactemoji.APIName())
-		}
-	}
-
-
-
 	if strings.ToLower(m.Content) == "b!davidmode" {
-		if (m.Author.ID == "171417327961636864" || m.Author.ID == "330568658374098947") {
+		if (m.Author.ID == myID || m.Author.ID == "330568658374098947") {
 			if (david) {
 				david = false
 				s.ChannelMessageSend(m.ChannelID, "DavidMode Disabled")
@@ -292,7 +297,15 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if strings.ToLower(m.Content) == "b!debug" {
-		s.ChannelMessageSend(m.ChannelID, toJSON(entries))
+		if m.Author.ID == myID {
+			jsonFile, err := os.Open(filename)
+			if err == nil {
+				defer jsonFile.Close()
+				s.ChannelFileSend(m.ChannelID, "USERS.json", jsonFile)
+			} else {
+				fmt.Println("File does not exist yet")
+			}
+		}
 	}
 
 	if strings.ToLower(m.Content) == "b!clear" {
@@ -344,6 +357,13 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 			s.ChannelMessageSend(m.ChannelID, str.String())
 
+		}
+	}
+
+	//MESSAGE REACTION MODE
+	if reactMode {
+		if contains(reactlist, m.Author.ID) {
+			_ = s.MessageReactionAdd(m.ChannelID, m.ID, reactemoji.APIName())
 		}
 	}
 
