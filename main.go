@@ -271,8 +271,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 				key := containsUser(entries, m.Author.ID)
 				if key < 0 {
-					fmt.Println("USER NOT FOUND: ADDING USER")
-
+					//Add new user
 					e := Entry{
 						UserID:	m.Author.ID,
 						Nick: nick,
@@ -288,13 +287,10 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 					entries[key].TotalMessages += 1
 					entries[key].AverageLength = entries[key].AverageLength * (float64(entries[key].TotalMessages) - 1)/float64(entries[key].TotalMessages) + length/float64(entries[key].TotalMessages)
 					entries[key].Nick = nick
-					fmt.Println("USER INFO UPDATED")
 				}
 			}
 
-			//Write to file
-			file, _ := json.MarshalIndent(entries, "", " ")
-			_ = ioutil.WriteFile(filename, file, 0644)
+			saveUsers()
 		}
 	}
 
@@ -337,6 +333,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		if err == nil {
 			entries = nil
 			s.ChannelMessageSend(m.ChannelID, "Entries Cleared")
+			saveUsers()
 		} else {
 			s.ChannelMessageSend(m.ChannelID, "ERROR: " + err.Error())
 		}
@@ -642,4 +639,10 @@ func DownloadFile(filepath string, url string) error {
 	// Write the body to file
 	_, err = io.Copy(out, resp.Body)
 	return err
+}
+
+func saveUsers() {
+	//Write to file
+	file, _ := json.MarshalIndent(entries, "", " ")
+	_ = ioutil.WriteFile(filename, file, 0644)
 }
