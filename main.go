@@ -300,9 +300,9 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	if strings.ToLower(m.Content) == "b!debug" {
 		if m.Author.ID == myID {
-			err := sendUsers(m.ChannelID)
+			err := sendUsers(s, m.ChannelID)
 			if err != nil {
-				s.ChannelMessageSend(m.ChannelID, "ERROR: " + err)
+				s.ChannelMessageSend(m.ChannelID, "ERROR: " + err.Error())
 			}
 		}
 	}
@@ -333,12 +333,12 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	if strings.ToLower(m.Content) == "b!clear" {
 		//DUMP OLD JSON JUST IN CASE
-		err := sendUsers(m.ChannelID)
+		err := sendUsers(s, m.ChannelID)
 		if err == nil {
 			entries = nil
 			s.ChannelMessageSend(m.ChannelID, "Entries Cleared")
 		} else {
-			s.ChannelMessageSend(m.ChannelID, "ERROR: " + err)
+			s.ChannelMessageSend(m.ChannelID, "ERROR: " + err.Error())
 		}
 	}
 
@@ -613,7 +613,7 @@ func sortScore(e []Entry) []Entry {
 	return e
 }
 
-func sendUsers(channel string) error {
+func sendUsers(s *discordgo.Session, channel string) error {
 	score()
 	jsonFile, err := os.Open(filename)
 	if err == nil {
