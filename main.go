@@ -63,7 +63,7 @@ func init() {
 	roles = make(map[string]float64)
 	roles["593310655696732163"] = 1 //Golden & up
 	roles["593308455247413270"] = 1.15 //Loyalist
-    roles["594580477378166784"] = 1.25 //Newbies + Pals
+	roles["594580477378166784"] = 1.25 //Newbies + Pals
 	roles["default"] = 1.25 //No Role 
 	david = false // Default state of the David Hyperbleble reaction feature
 	reactMode = false //Default state of the specific user message reaction feature
@@ -300,13 +300,10 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	if strings.ToLower(m.Content) == "b!debug" {
 		if m.Author.ID == myID {
-			score()
-			jsonFile, err := os.Open(filename)
-			if err == nil {
-				defer jsonFile.Close()
-				s.ChannelFileSend(m.ChannelID, "USERS.json", jsonFile)
-			} else {
-				fmt.Println("File does not exist yet")
+			err := sendUsers(m.ChannelID)
+			if err != nil 
+			{
+				s.ChannelMessageSend(m.ChannelID, "ERROR: " + err)
 			}
 		}
 	}
@@ -336,8 +333,15 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if strings.ToLower(m.Content) == "b!clear" {
-		entries = nil
-		s.ChannelMessageSend(m.ChannelID, "Entries Cleared")
+		//DUMP OLD JSON JUST IN CASE
+		err := sendUsers(m.ChannelID)
+		if err == nil 
+		{
+			entries = nil
+			s.ChannelMessageSend(m.ChannelID, "Entries Cleared")
+		} else {
+			s.ChannelMessageSend(m.ChannelID, "ERROR: " + err)
+		}
 	}
 
 	if strings.ToLower(m.Content) == "b!draw" {
@@ -504,12 +508,12 @@ func userJoin(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
 }
 
 func getQuotedStrings(s string) []string {
-  ms := quotesRegex.FindAllString(s, -1)
-  ss := make([]string, len(ms))
-  for i, m := range ms {
-    ss[i] = m[1 : len(m)-1] // Note the substring of the match.
-  }
-  return ss
+	ms := quotesRegex.FindAllString(s, -1)
+	ss := make([]string, len(ms))
+	for i, m := range ms {
+		ss[i] = m[1 : len(m)-1] // Note the substring of the match.
+	}
+	return ss
 
 }
 
@@ -609,6 +613,16 @@ func sortScore(e []Entry) []Entry {
 	sortScore(e[left+1:])
 
 	return e
+}
+
+func sendUsers(channel string) error {
+	score()
+	jsonFile, err := os.Open(filename)
+	if err == nil {
+		defer jsonFile.Close()
+		s.ChannelFileSend(channel, "USERS.json", jsonFile)
+	}
+	return nil
 }
 
 func DownloadFile(filepath string, url string) error {
