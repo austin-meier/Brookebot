@@ -5,6 +5,8 @@ import (
 	"os"
 	"os/signal"
 	"io/ioutil"
+	"io"
+	"net/http"
 	"syscall"
 	"strings"
 	"math"
@@ -68,7 +70,7 @@ func init() {
 	myID = "171417327961636864" //KingBunz Discord Author ID
 
 
-	//TODO LOAD ENTRIES FROM FILE
+	//LOAD SAVED ENTRIES FROM FILE
 	jsonFile, err := os.Open(filename)
 	if err == nil {
 		defer jsonFile.Close()
@@ -305,6 +307,30 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				s.ChannelFileSend(m.ChannelID, "USERS.json", jsonFile)
 			} else {
 				fmt.Println("File does not exist yet")
+			}
+		}
+	}
+
+	if strings.ToLower(m.Content) == "b!loadjson" {
+		if m.Author.ID == myID {
+			if len(m.Attachments) == 1 {
+				err := DownloadFile(filename, m.Attachments[0].URL)
+				if err == nil {
+					// LOAD ENTRIES FROM FILE
+					jsonFile, err := os.Open(filename)
+					if err == nil {
+						defer jsonFile.Close()
+						d, _ := ioutil.ReadAll(jsonFile)
+						json.Unmarshal([]byte(d), &entries)
+						s.ChannelMessageSend(m.ChannelID, "Succesfully loaded users JSON file")
+					} else {
+						s.ChannelMessageSend(m.ChannelID, "ERROR: File opening error")
+					}	
+				} else {
+					s.ChannelMessageSend(m.ChannelID, "ERROR: error downloading JSON file from discord")
+				}
+			} else {
+				s.ChannelMessageSend(m.ChannelID, "ERROR: Wrong format. Only append one users.json atttachment.")
 			}
 		}
 	}
@@ -583,4 +609,25 @@ func sortScore(e []Entry) []Entry {
 	sortScore(e[left+1:])
 
 	return e
+}
+
+func DownloadFile(filepath string, url string) error {
+
+	// Get the data
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Create the file
+	out, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	// Write the body to file
+	_, err = io.Copy(out, resp.Body)
+	return err
 }
