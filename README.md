@@ -3,4 +3,4 @@ A discord bot created for TheBrookeB Discord Server for moderation and event man
 
 Created using the DiscordGo library
 
-Note: Token in code repository is outdated.
+Note: Token in code repository is outdated and non-functional.
